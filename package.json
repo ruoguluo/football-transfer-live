@@ -1,0 +1,14 @@
+{
+  "name": "football-transfer-live",
+  "version": "1.0.0",
+  "private": true,
+  "description": "World football transfer movement dashboard with a Sportmonks server-side adapter and demo fallback",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check public/app.js && node --check smoke-test.js",
+    "test": "node smoke-test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
