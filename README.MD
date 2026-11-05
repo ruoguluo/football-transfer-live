@@ -198,10 +198,14 @@ football-transfer-live/
 │   ├── index.html      # 页面结构与详情对话框
 │   ├── styles.css      # 响应式样式与可访问性适配
 │   └── app.js          # 数据请求、筛选、渲染和交互
+├── .env.example        # 环境变量模板
+├── .gitignore          # 版本控制忽略规则
+├── LICENSE             # MIT 许可证
+├── README.EN.MD        # 英文文档
+├── README.MD           # 中文文档
+├── package.json        # 项目元数据、启动、检查与测试脚本
 ├── server.js           # 静态服务、API 代理、规范化、缓存与降级
-├── smoke-test.js       # 使用本地模拟上游的端到端冒烟测试
-├── package.json        # 启动、语法检查与测试脚本
-└── README.MD
+└── smoke-test.js       # 使用本地模拟上游的端到端冒烟测试
 ```
 
 ## 检查与测试
@@ -236,3 +240,9 @@ npm test
 - 本项目不包含用户认证和数据库，不应直接视为完整的生产级部署方案。
 - 已确认转会与媒体传闻具有不同可信度；传闻不构成官方确认，使用时应保留来源和概率信息。
 - 商业转售或大规模展示上游内容前，应核对 Sportmonks 合同中的授权、缓存和署名要求。
+
+## 许可证
+
+本项目代码与文档采用 [MIT License](LICENSE)，版权归 Russell Luo 所有。
+
+MIT 许可证仅覆盖本仓库中的代码和文档，不覆盖 Sportmonks API 提供的转会数据；数据的使用、缓存与展示仍须遵守服务商条款。

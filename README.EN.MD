@@ -198,11 +198,14 @@ football-transfer-live/
 │   ├── index.html      # Page structure and details dialog
 │   ├── styles.css      # Responsive styling and accessibility support
 │   └── app.js          # Data loading, filtering, rendering, and interactions
-├── server.js           # Static server, API proxy, normalization, cache, and fallback
-├── smoke-test.js       # End-to-end smoke tests using a local mock upstream
-├── package.json        # Start, syntax-check, and test scripts
+├── .env.example        # Environment variable template
+├── .gitignore          # Version-control ignore rules
+├── LICENSE             # MIT license
+├── README.EN.MD        # English documentation
 ├── README.MD           # Chinese documentation
-└── README.EN.MD        # English documentation
+├── package.json        # Project metadata, start, check, and test scripts
+├── server.js           # Static server, API proxy, normalization, cache, and fallback
+└── smoke-test.js       # End-to-end smoke tests using a local mock upstream
 ```
 
 ## Checks and Tests
@@ -237,3 +240,9 @@ Tests use random available ports. They require neither a real Sportmonks token n
 - This project does not include user authentication or a database and should not be treated as a complete production deployment by itself.
 - Confirmed transfers and media rumours have different levels of reliability. Rumours are not official confirmations, and their sources and probabilities should be preserved.
 - Before commercially reselling or extensively displaying upstream content, review the Sportmonks contract for licensing, caching, and attribution requirements.
+
+## License
+
+The source code and documentation in this repository are released under the [MIT License](LICENSE). Copyright (c) 2026 Russell Luo.
+
+The MIT License covers only the code and documentation in this repository. It does not grant rights to Sportmonks API data, whose use, caching, and display remain subject to the provider's terms.
