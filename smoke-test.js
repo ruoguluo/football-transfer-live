@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const http = require('node:http');
 const net = require('node:net');
 const path = require('node:path');
@@ -159,6 +160,9 @@ async function main() {
   const mockPort = await freePort();
   const mockServer = await createMockServer(mockPort);
   const children = [];
+  const indexDir = path.join(ROOT, 'dist', '__smoke_dir_index__');
+  fs.mkdirSync(indexDir, { recursive: true });
+  fs.writeFileSync(path.join(indexDir, 'index.html'), '<!doctype html><title>smoke directory index</title>');
 
   try {
     const demoPort = await freePort();
@@ -181,11 +185,24 @@ async function main() {
 
     const page = await fetch(`http://127.0.0.1:${demoPort}/`);
     assert.equal(page.status, 200);
-    assert.match(await page.text(), /转会动态雷达/);
-    const css = await fetch(`http://127.0.0.1:${demoPort}/styles.css`);
+    const pageHtml = await page.text();
+    assert.match(pageHtml, /转会动态雷达/);
+    const cssPath = pageHtml.match(/<link[^>]+href="([^"]+\.css)"/)?.[1];
+    const jsPath = pageHtml.match(/<script[^>]+src="([^"]+\.js)"/)?.[1];
+    assert.ok(cssPath, 'built HTML should reference a CSS asset');
+    assert.ok(jsPath, 'built HTML should reference a JavaScript asset');
+    const css = await fetch(`http://127.0.0.1:${demoPort}${cssPath}`);
     assert.equal(css.status, 200);
+    assert.match(css.headers.get('cache-control') || '', /immutable/);
+    const clientBundle = await fetch(`http://127.0.0.1:${demoPort}${jsPath}`);
+    assert.equal(clientBundle.status, 200);
     const traversal = await rawGet(demoPort, '/%2e%2e%2fserver.js');
     assert.equal(traversal.status, 403);
+    const dirIndex = await fetch(`http://127.0.0.1:${demoPort}/__smoke_dir_index__/`);
+    assert.equal(dirIndex.status, 200);
+    assert.match(await dirIndex.text(), /smoke directory index/);
+    const dirIndexNoSlash = await fetch(`http://127.0.0.1:${demoPort}/__smoke_dir_index__`);
+    assert.equal(dirIndexNoSlash.status, 200);
 
     const livePort = await freePort();
     const liveApp = startApp(livePort, {
@@ -239,8 +256,9 @@ async function main() {
     const downFeed = await fetchJson(downPort, '/api/movements');
     assert.equal(downFeed.status, 502);
 
-    console.log('Smoke tests passed: demo mode, live normalization, rumour degradation, outage handling, static assets and path traversal protection.');
+    console.log('Smoke tests passed: demo mode, live normalization, rumour degradation, outage handling, built static assets and path traversal protection.');
   } finally {
+    fs.rmSync(indexDir, { recursive: true, force: true });
     for (const child of children) child.kill('SIGTERM');
     await Promise.all(children.map(child => new Promise(resolve => {
       if (child.exitCode !== null) return resolve();

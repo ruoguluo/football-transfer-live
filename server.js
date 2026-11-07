@@ -6,7 +6,7 @@ const fsp = require('node:fs/promises');
 const path = require('node:path');
 
 const ROOT = __dirname;
-const PUBLIC_DIR = path.join(ROOT, 'public');
+const STATIC_DIR = path.join(ROOT, 'dist');
 const ENV_PATH = path.join(ROOT, '.env');
 
 function loadEnvFile() {
@@ -398,7 +398,13 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
-  '.ico': 'image/x-icon'
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.map': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json'
 };
 
 async function serveStatic(response, pathname, method) {
@@ -408,17 +414,21 @@ async function serveStatic(response, pathname, method) {
   } catch (_) {
     return jsonError(response, 400, '请求路径无效');
   }
-  const relative = decoded === '/' ? 'index.html' : decoded.replace(/^\/+/, '');
-  const filePath = path.resolve(PUBLIC_DIR, relative);
-  if (!filePath.startsWith(`${PUBLIC_DIR}${path.sep}`)) {
+  let relative = decoded === '/' ? 'index.html' : decoded.replace(/^\/+/, '');
+  if (decoded !== '/' && (decoded.endsWith('/') || !path.extname(relative))) {
+    relative = `${relative.replace(/\/+$/, '')}/index.html`;
+  }
+  const filePath = path.resolve(STATIC_DIR, relative);
+  if (!filePath.startsWith(`${STATIC_DIR}${path.sep}`)) {
     return jsonError(response, 403, '禁止访问该路径');
   }
   try {
     const content = await fsp.readFile(filePath);
+    const isImmutableAsset = relative.startsWith('assets/');
     response.writeHead(200, {
       'Content-Type': MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
       'Content-Length': content.length,
-      'Cache-Control': 'public, max-age=300',
+      'Cache-Control': isImmutableAsset ? 'public, max-age=31536000, immutable' : 'no-cache',
       'X-Content-Type-Options': 'nosniff'
     });
     response.end(method === 'HEAD' ? undefined : content);
@@ -426,6 +436,11 @@ async function serveStatic(response, pathname, method) {
     if (error.code === 'ENOENT' || error.code === 'EISDIR') return jsonError(response, 404, '页面不存在');
     return jsonError(response, 500, '读取静态资源失败');
   }
+}
+
+if (!fs.existsSync(path.join(STATIC_DIR, 'index.html'))) {
+  console.error('未找到前端构建产物 dist/index.html，请先运行 npm run build。');
+  process.exit(1);
 }
 
 const server = http.createServer(async (request, response) => {

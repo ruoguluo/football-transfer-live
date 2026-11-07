@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Scottish Premiership 球员数据 Demo</title>
+  <style>
+  :root { color-scheme: light; --bg: #f5f7fa; --surface: #ffffff; --text: #172033; --muted: #667085; --line: #e4e8ef; --accent: #2458a6; --accent-soft: #eaf1fb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.55; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .shell { max-width: 1180px; margin: 0 auto; padding: 32px 20px 56px; }
+  header { margin-bottom: 24px; }
+  .eyebrow { margin: 0 0 8px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  h1 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 38px); line-height: 1.2; }
+  .lede { max-width: 820px; margin: 0; color: var(--muted); }
+  .notice { margin: 18px 0; padding: 12px 16px; border: 1px solid #f0c97a; border-radius: 10px; background: #fff8e8; color: #6b4b12; font-size: 14px; }
+  .stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 24px 0; }
+  .stat { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  .stat .label { display: block; color: var(--muted); font-size: 12px; }
+  .stat .value { display: block; margin-top: 4px; font-size: 24px; font-weight: 700; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0 0 20px; color: var(--muted); font-size: 13px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+  input, select { min-height: 40px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
+  input { flex: 1 1 320px; }
+  select { min-width: 220px; }
+  .count { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+  .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--accent-soft); color: #213d68; font-weight: 650; z-index: 1; }
+  tbody tr:hover { background: #f8fbff; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .empty { padding: 28px; text-align: center; color: var(--muted); }
+  .panel { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 20px; margin-bottom: 20px; }
+  .profile { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .field .label { display: block; color: var(--muted); font-size: 12px; }
+  .field .value { display: block; margin-top: 3px; font-weight: 600; overflow-wrap: anywhere; }
+  h2 { margin: 0 0 12px; font-size: 20px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .status { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: #213d68; font-size: 12px; }
+  .player-head { display: flex; align-items: center; gap: 20px; }
+  .player-head-text { min-width: 0; }
+  .avatar-wrap { position: relative; display: inline-flex; flex: 0 0 auto; width: 96px; height: 96px; border: 1px solid var(--line); border-radius: 50%; overflow: hidden; background: var(--accent-soft); color: #213d68; }
+  .avatar-wrap.small { width: 32px; height: 32px; font-size: 11px; }
+  .avatar { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .avatar-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 700; letter-spacing: .03em; }
+  .name-cell { display: flex; align-items: center; gap: 10px; }
+  .social-links { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .social-link { display: inline-flex; align-items: center; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--accent-soft); color: #213d68; font-size: 12px; }
+  .social-link:hover { text-decoration: none; background: #dce9fa; }
+  .social-empty { color: var(--muted); font-size: 12px; }
+  .social-more { color: var(--muted); font-size: 12px; }
+  footer { margin-top: 20px; color: var(--muted); font-size: 12px; }
+  @media (max-width: 900px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 760px) { .profile { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">Demo dataset</p>
+      <h1>Scottish Premiership 球员基础信息</h1>
+      <p class="lede">点击球员姓名进入个人页面，查看基础资料与已确认转会历史。数据源为 Sportmonks Football API v3；本页是 Supabase 的静态快照。</p>
+    </header>
+
+    <div class="notice">演示数据不是欧洲五大联赛目标数据。数据库通过 <code>leagues.is_demo</code> 标识，不会进入 <code>current_top5_players</code> 视图。转会历史仅包含已确认转会，不包含传闻。</div>
+
+    <section class="stats" aria-label="数据摘要">
+      <div class="stat"><span class="label">球队</span><span class="value" id="stat-teams">—</span></div>
+      <div class="stat"><span class="label">去重球员</span><span class="value" id="stat-players">—</span></div>
+      <div class="stat"><span class="label">当前阵容关系</span><span class="value" id="stat-memberships">—</span></div>
+      <div class="stat"><span class="label">转会记录</span><span class="value" id="stat-transfers">—</span></div>
+      <div class="stat"><span class="label">赛季</span><span class="value" id="stat-season">—</span></div>
+    </section>
+
+    <div class="meta">
+      <span>联赛：<strong id="meta-league">—</strong></span>
+      <span>赛季：<span id="meta-season-name">—</span></span>
+      <span>赛季 ID：<span id="meta-season-id">—</span></span>
+      <span>赛季日期：<span id="meta-season-dates">—</span></span>
+      <span>有转会历史球员：<span id="meta-players-with-transfers">—</span></span>
+      <span>公开社媒：<span id="meta-social-links">0</span> 条 / <span id="meta-players-with-socials">0</span> 人</span>
+      <span>同步状态：<span id="meta-sync">—</span></span>
+      <span>生成时间：<span id="meta-generated">—</span></span>
+    </div>
+
+    <section class="controls" aria-label="筛选">
+      <input id="search" type="search" placeholder="搜索球员、球队、国籍或位置" autocomplete="off">
+      <select id="team-filter"><option value="">全部球队</option></select>
+    </section>
+    <p class="count" id="result-count"></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>球员</th><th>球队</th><th>位置</th><th>详细位置</th><th>国籍</th><th>出生日期</th><th>身高</th><th>体重</th><th>号码</th><th>公开社媒</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <footer>静态快照由 <code>npm run demo:report</code> 生成；转会历史由 <code>npm run sync:demo:transfers</code> 采集。</footer>
+  </main>
+
+  <script src="demo-data.js?v=1794009667714"></script>
+  <script>
+    (function () {
+
+      function avatarInitials(name) {
+        var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return '#';
+        return parts.slice(0, 2).map(function (part) {
+          return part.charAt(0).toUpperCase();
+        }).join('');
+      }
+      function isSafeAvatarUrl(value) {
+        if (!value || typeof value !== 'string') return false;
+        try {
+          var url = new URL(value, window.location.href);
+          return url.protocol === 'https:'
+            && url.hostname === 'cdn.sportmonks.com'
+            && url.pathname.toLowerCase().indexOf('/placeholder.png') === -1;
+        } catch (error) {
+          return false;
+        }
+      }
+      function createAvatar(url, name, small) {
+        var wrap = document.createElement('span');
+        wrap.className = small ? 'avatar-wrap small' : 'avatar-wrap';
+        var fallback = document.createElement('span');
+        fallback.className = 'avatar-fallback';
+        fallback.textContent = avatarInitials(name);
+        if (isSafeAvatarUrl(url)) {
+          var image = document.createElement('img');
+          image.className = 'avatar';
+          image.alt = String(name || '球员') + ' 头像';
+          image.loading = 'lazy';
+          image.decoding = 'async';
+          image.referrerPolicy = 'no-referrer';
+          image.src = url;
+          image.addEventListener('error', function () {
+            image.remove();
+            fallback.hidden = false;
+          });
+          wrap.appendChild(image);
+          fallback.hidden = true;
+        }
+        wrap.appendChild(fallback);
+        return wrap;
+      }
+
+      function isSafeSocialUrl(value) {
+        if (!value || typeof value !== 'string') return false;
+        try {
+          var url = new URL(value, window.location.href);
+          return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch (error) {
+          return false;
+        }
+      }
+      function socialTitle(link) {
+        var parts = [link.platform || '公开链接'];
+        if (link.handle) parts.push('账号 ' + link.handle);
+        if (link.source_name) parts.push('来源 ' + link.source_name);
+        if (link.verified === true) parts.push('已核验');
+        return parts.join(' · ');
+      }
+      function socialDisplay(link) {
+        return link.platform || '公开链接';
+      }
+      function createSocialLinks(rows, compact) {
+        var container = document.createElement('span');
+        container.className = 'social-links';
+        var links = Array.isArray(rows) ? rows.filter(function (row) {
+          return row && isSafeSocialUrl(row.url);
+        }) : [];
+        if (!links.length) {
+          var empty = document.createElement('span');
+          empty.className = 'social-empty';
+          empty.textContent = '暂未收录';
+          container.appendChild(empty);
+          return container;
+        }
+        var visible = compact ? links.slice(0, 3) : links;
+        visible.forEach(function (link) {
+          var anchor = document.createElement('a');
+          anchor.className = 'social-link';
+          anchor.href = link.url;
+          anchor.target = '_blank';
+          anchor.rel = 'noopener noreferrer';
+          anchor.textContent = socialDisplay(link);
+          anchor.title = socialTitle(link);
+          container.appendChild(anchor);
+        });
+        if (compact && links.length > visible.length) {
+          var more = document.createElement('span');
+          more.className = 'social-more';
+          more.textContent = '+' + (links.length - visible.length);
+          more.title = socialTitle(links[visible.length]) + ' 等链接';
+          container.appendChild(more);
+        }
+        return container;
+      }
+
+      var data = window.DEMO_DATA || {};
+      var memberships = Array.isArray(data.memberships) ? data.memberships : [];
+      var socials = Array.isArray(data.socials) ? data.socials : [];
+      var socialsByPlayer = new Map();
+      socials.forEach(function (link) {
+        if (!link || !link.player_id) return;
+        var key = String(link.player_id);
+        if (!socialsByPlayer.has(key)) socialsByPlayer.set(key, []);
+        socialsByPlayer.get(key).push(link);
+      });
+      var summary = data.summary || {};
+      var league = data.league || {};
+      var season = data.season || {};
+      var sync = data.latest_sync || {};
+
+      function setText(id, value) {
+        document.getElementById(id).textContent = value === null || value === undefined || value === '' ? '—' : String(value);
+      }
+      function fmt(value) {
+        if (value === null || value === undefined || value === '') return '—';
+        return String(value);
+      }
+      setText('stat-teams', summary.teams);
+      setText('stat-players', summary.players);
+      setText('stat-memberships', summary.memberships);
+      setText('stat-transfers', summary.transfers);
+      setText('stat-season', season.name || season.id);
+      setText('meta-league', league.name);
+      setText('meta-season-name', season.name);
+      setText('meta-season-id', season.id);
+      setText('meta-season-dates', season.starting_at && season.ending_at
+        ? season.starting_at + ' – ' + season.ending_at
+        : null);
+      setText('meta-players-with-transfers', summary.players_with_transfers);
+      setText('meta-social-links', summary.social_links);
+      setText('meta-players-with-socials', summary.players_with_socials);
+      setText('meta-sync', sync.status ? sync.mode + ' / ' + sync.status : '');
+      setText('meta-generated', data.generated_at);
+
+      var teamFilter = document.getElementById('team-filter');
+      var teams = [];
+      memberships.forEach(function (row) {
+        if (row.team_name && teams.indexOf(row.team_name) === -1) teams.push(row.team_name);
+      });
+      teams.sort(function (a, b) { return a.localeCompare(b, 'en'); });
+      teams.forEach(function (team) {
+        var option = document.createElement('option');
+        option.value = team;
+        option.textContent = team;
+        teamFilter.appendChild(option);
+      });
+
+      var search = document.getElementById('search');
+      var rows = document.getElementById('rows');
+      var resultCount = document.getElementById('result-count');
+      var columns = [
+        'team_name', 'position_name', 'detailed_position_name',
+        'nationality_name', 'date_of_birth', 'height_cm', 'weight_kg', 'jersey_number'
+      ];
+
+      function render() {
+        var query = search.value.trim().toLowerCase();
+        var selectedTeam = teamFilter.value;
+        var filtered = memberships.filter(function (row) {
+          if (selectedTeam && row.team_name !== selectedTeam) return false;
+          if (!query) return true;
+          return [row.display_name, row.common_name, row.name, row.team_name,
+            row.nationality_name, row.position_name, row.detailed_position_name]
+            .some(function (value) { return String(value || '').toLowerCase().indexOf(query) !== -1; });
+        });
+        rows.replaceChildren();
+        if (!filtered.length) {
+          var emptyRow = document.createElement('tr');
+          var emptyCell = document.createElement('td');
+          emptyCell.colSpan = columns.length + 2;
+          emptyCell.className = 'empty';
+          emptyCell.textContent = '没有匹配的球员。';
+          emptyRow.appendChild(emptyCell);
+          rows.appendChild(emptyRow);
+        } else {
+          filtered.forEach(function (row) {
+            var tr = document.createElement('tr');
+            var nameCell = document.createElement('td');
+            nameCell.className = 'name-cell';
+            var link = document.createElement('a');
+            link.href = 'player-detail.html?playerId=' + encodeURIComponent(row.player_id);
+            link.textContent = fmt(row.display_name || row.common_name || row.name || ('球员 #' + row.player_id));
+            nameCell.appendChild(createAvatar(row.image_path, link.textContent, true));
+            nameCell.appendChild(link);
+            tr.appendChild(nameCell);
+            columns.forEach(function (key) {
+              var td = document.createElement('td');
+              td.textContent = fmt(row[key]);
+              tr.appendChild(td);
+            });
+            var socialCell = document.createElement('td');
+            socialCell.appendChild(createSocialLinks(socialsByPlayer.get(String(row.player_id)), true));
+            tr.appendChild(socialCell);
+            rows.appendChild(tr);
+          });
+        }
+        resultCount.textContent = '显示 ' + filtered.length + ' / ' + memberships.length + ' 条阵容记录';
+      }
+
+      search.addEventListener('input', render);
+      teamFilter.addEventListener('change', render);
+      render();
+    })();
+  </script>
+</body>
+</html>

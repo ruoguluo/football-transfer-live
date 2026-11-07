@@ -1,5 +1,8 @@
 .env
 .workbuddy-ai/
 node_modules/
+dist/
+.vite/
+.playwright-mcp/
 .DS_Store
 *.log
